@@ -41,12 +41,17 @@ class ORLDataset:
     def preprocess(self, mean, var):
         for person_images in self.total_images_list:
             for i, image in enumerate(person_images):
-                # 直方图均衡化 + 归一化
+                # Histogram + Normalized
                 hist, bins = np.histogram(image.flatten(), bins=256, range=(0, 256), density=True)
                 cdf = hist.cumsum()
                 cdf_normalized = cdf / cdf[-1]
                 image_equalized = np.interp(image.flatten(), bins[:-1], cdf_normalized * 255).reshape(image.shape)
                 person_images[i] = (image_equalized.astype(np.float32) - mean) / np.sqrt(var)
+                person_images[i] = (2 * (person_images[i] - np.min(person_images[i])) /
+                                    (np.max(person_images[i]) - np.min(person_images[i])) - 1)
+                # TODO: use [-1,1] or [0,1] ?
+                # person_images[i] = ((person_images[i] - np.min(person_images[i])) /
+                #                     (np.max(person_images[i]) - np.min(person_images[i])))
 
     def split_personal_image(self, train_image_number):
         train_set = []

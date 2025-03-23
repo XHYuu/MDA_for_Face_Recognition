@@ -7,6 +7,7 @@ from model.MDA import MDA
 
 np.random.seed(42)
 
+
 def arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="ORL")
@@ -39,7 +40,6 @@ def main():
         print(f"Train set : Test set = {m} : {10 - m}")
         train_set, train_label, test_set, test_label = dataset.split_personal_image(m)
         train_test(args, train_set, train_label, test_set, test_label, m)
-
 
 
 if __name__ == '__main__':

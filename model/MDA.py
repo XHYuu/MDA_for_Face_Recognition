@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.linalg import eigh
 from tqdm import tqdm
+from sklearn.neighbors import KNeighborsClassifier
 
 np.random.seed(42)
 
@@ -15,6 +16,7 @@ class MDA:
         self.epochs = epochs
         self.dim = len(input_dim)
         self.epsilon = epsilon
+        self.knn = KNeighborsClassifier(n_neighbors=3)
 
     def fit(self, images, labels):
         tensor = np.stack(images, axis=-1)  # [m_0,...,m_n,N]
@@ -45,20 +47,24 @@ class MDA:
                     stop_flag = False
             if t > 2 and stop_flag:
                 break
+        tensor = self.project(tensor)
+        tensor_flatten = tensor.reshape(tensor.shape[-1], -1)
+        self.knn.fit(tensor_flatten, labels)
 
-    def project(self, tensor, exclude_dim):
+    def project(self, tensor, exclude_dim=-1):
         for mode, u in enumerate(self.U):
             if mode != exclude_dim:
                 tensor = self.mode_dot(tensor, u.T, mode)
         return tensor
 
-    def predict(self, image):
+    def predict(self, images):
         """
         use knn to perdict result
-        :param image:
-        :return:
         """
-        pass
+        tensor = self.project(np.stack(images, axis=-1))
+        tensor_flatten = tensor.reshape(tensor.shape[-1], -1)
+        pred = self.knn.predict(tensor_flatten)
+        return pred
 
     @staticmethod
     def mode_dot(tensor, matrix, mode):

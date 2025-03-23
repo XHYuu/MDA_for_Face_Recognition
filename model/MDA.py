@@ -32,12 +32,16 @@ class MDA:
                 S_W = self.compute_S_W(Y, labels, k)
 
                 # calculate eigenvalue and eigenvector
-                eig_vals, eig_vecs = eigh(S_B, S_W)
+                eig_vals, eig_vecs = eigh(S_B, S_W + 1e-4 * np.eye(S_W.shape[0]))
+                # sort the eig_val in descending order
+                sorted_indices = np.argsort(eig_vals)[::-1]
+                eig_vecs = eig_vecs[:, sorted_indices]
 
                 # update U[k]
                 self.U[k] = eig_vecs[:, :self.U[k].shape[1]]
                 if (np.linalg.norm(self.U[k] - U_current[k], ord='fro') >=
                         self.input_dim[k] * self.output_dim[k] * self.epsilon):
+                    # print(np.linalg.norm(self.U[k] - U_current[k], ord='fro'))
                     stop_flag = False
             if t > 2 and stop_flag:
                 break
@@ -47,6 +51,14 @@ class MDA:
             if mode != exclude_dim:
                 tensor = self.mode_dot(tensor, u.T, mode)
         return tensor
+
+    def predict(self, image):
+        """
+        use knn to perdict result
+        :param image:
+        :return:
+        """
+        pass
 
     @staticmethod
     def mode_dot(tensor, matrix, mode):
@@ -75,18 +87,18 @@ class MDA:
         Inter-class scatter S_B
         """
         Y_total_transpose = np.moveaxis(Y, mode, 0)
-        Y_in_mode = Y_total_transpose.reshape(Y_total_transpose.shape[0], -1)
+        Y_in_mode = Y_total_transpose.reshape(Y_total_transpose.shape[0], -1, Y.shape[-1])
         overall_mean = np.mean(Y_in_mode, axis=-1)
         S_B = 0
         unique_labels = np.unique(labels)
         for c in unique_labels:
             class_indices = np.where(labels == c)[0]
             Y_class_transpose = np.moveaxis(Y[..., class_indices], mode, 0)
-            Y_in_class_mode = Y_class_transpose.reshape(Y_class_transpose.shape[0], -1)
+            Y_in_class_mode = Y_class_transpose.reshape(Y_class_transpose.shape[0], -1, len(class_indices))
             class_mean = np.mean(Y_in_class_mode, axis=-1)  # mean value for each class
             n_c = len(class_indices)
             diff = class_mean - overall_mean
-            S_B += n_c * np.outer(diff, diff)
+            S_B += n_c * np.dot(diff, diff.T)
         return S_B
 
     @staticmethod
@@ -99,11 +111,11 @@ class MDA:
         for c in unique_labels:
             class_indices = np.where(labels == c)[0]
             Y_class_transpose = np.moveaxis(Y[..., class_indices], mode, 0)
-            Y_in_class_mode = Y_class_transpose.reshape(Y_class_transpose.shape[0], -1)
+            Y_in_class_mode = Y_class_transpose.reshape(Y_class_transpose.shape[0], -1, len(class_indices))
             class_mean = np.mean(Y_in_class_mode, axis=-1)  # mean value for each class
             for i in class_indices:
                 Y_transpose = np.moveaxis(Y[..., i], mode, 0)
                 Y_in_mode = Y_transpose.reshape(Y_transpose.shape[0], -1)  # reshape each data point
-                diff = np.mean(Y_in_mode, axis=-1) - class_mean
-                S_W += np.outer(diff, diff)
+                diff = Y_in_mode - class_mean
+                S_W += np.dot(diff, diff.T)
         return S_W

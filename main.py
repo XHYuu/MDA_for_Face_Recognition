@@ -4,6 +4,7 @@ from sklearn.metrics import classification_report
 
 from dataLoader import ORLDataset
 from model.Eigenface import Eigenface
+from model.Fisherface import Fisherface
 from model.MDA import MDA
 
 np.random.seed(42)
@@ -13,9 +14,13 @@ def arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="ORL")
     parser.add_argument("--data_path", type=str, default="data/ORL")
-    parser.add_argument("--model", type=str, default="eigenface")
+    parser.add_argument("--model", type=str, default="fisherface",
+                        help="choose MDA, eigenface, fisherface")
     parser.add_argument("--epochs", type=int, default=200)
-    parser.add_argument("--epsilon", type=float, default=1e-3)
+    parser.add_argument("--epsilon", type=float, default=1e-4)
+    parser.add_argument("--pca_energy", type=float, default=0.95)
+    parser.add_argument("--lda_outdim", type=int, default=30,
+                        help="Hyperparameter only for fisherface")
 
     args = parser.parse_args()
     return args
@@ -29,20 +34,19 @@ def train_test(args, train_set, train_label, test_set, test_label):
 
     if args.model == "MDA":
         model = MDA(input_dim=list(train_set[0].shape),
-                    output_dim=[20, 20],
+                    output_dim=[40, 40],
                     epochs=args.epochs,
                     epsilon=args.epsilon)
     elif args.model == "eigenface":
         model = Eigenface(components=25)
+    elif args.model == "fisherface":
+        model = Fisherface(pca_energy=args.pca_energy, out_dim=args.lda_outdim)
     else:
         raise ValueError(f"Without model:{args.model}")
     model.fit(train_set, train_label)
 
     pred = model.predict(test_set)
     print(classification_report(test_label, pred))
-
-    # print(f"\n********G{m}/G{10 - m}**********")
-    # print(classification_report(test_label, pred))
 
 
 def main():

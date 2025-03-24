@@ -6,6 +6,7 @@ from dataLoader import ORLDataset
 from model.Eigenface import Eigenface
 from model.Fisherface import Fisherface
 from model.MDA import MDA
+from model.LDA import LDAProcessor
 
 np.random.seed(42)
 
@@ -14,8 +15,8 @@ def arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="ORL")
     parser.add_argument("--data_path", type=str, default="data/ORL")
-    parser.add_argument("--model", type=str, default="MDA",
-                        help="choose MDA, eigenface, fisherface")
+    parser.add_argument("--model", type=str, default="LDA",
+                        help="choose MDA, eigenface, fisherface, LDA")
     parser.add_argument("--epochs", type=int, default=200)
     parser.add_argument("--epsilon", type=float, default=1e-4)
     parser.add_argument("--pca_energy", type=float, default=0.95)
@@ -41,6 +42,8 @@ def train_test(args, train_set, train_label, test_set, test_label):
         model = Eigenface(components=25)
     elif args.model == "fisherface":
         model = Fisherface(pca_energy=args.pca_energy, out_dim=args.lda_outdim)
+    elif args.model == "LDA":
+        model = LDAProcessor(n_components=30)
     else:
         raise ValueError(f"Without model:{args.model}")
     model.fit(train_set, train_label)

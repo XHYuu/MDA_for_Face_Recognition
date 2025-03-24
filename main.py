@@ -14,7 +14,7 @@ def arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="ORL")
     parser.add_argument("--data_path", type=str, default="data/ORL")
-    parser.add_argument("--model", type=str, default="fisherface",
+    parser.add_argument("--model", type=str, default="MDA",
                         help="choose MDA, eigenface, fisherface")
     parser.add_argument("--epochs", type=int, default=200)
     parser.add_argument("--epsilon", type=float, default=1e-4)

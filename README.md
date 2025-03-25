@@ -1,6 +1,9 @@
 # MDA_for_Face_Recognition
 
 Duplicate paper: Multilinear Discriminant Analysis for Face Recognition
+<p align="center">
+  <img src="Image/Paper_title.png" width="600">
+</p>
 
 ### Dataset
 
@@ -22,6 +25,12 @@ One is conducted on 70 people of the FERET database with six different images fo
 two of them were applied as gallery set and the other four for probe set.   
 We extracted 40 Gabor features with five different scales and eight different directions in the down-sampled positions
 and each image was encoded as a third-order tensor of size for MDA/3-3.
+
+### MDA process
+
+<p align="center">
+  <img src="Image/MDA_process.png" width="400">
+</p>
 
 ### Experience Result
 

@@ -1,3 +1,5 @@
+import time
+
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
@@ -15,9 +17,11 @@ class LDAProcessor:
         :param X: Feature matrix
         :param y: Target labels
         """
+        start = time.time()
         X_train = X_train.reshape(X_train.shape[0], -1)
         X_train_transformed = self.lda.fit_transform(X_train, y_train)
         self.knn.fit(X_train_transformed, y_train)
+        print("Finish! Time consume:", time.time() - start)
 
     def predict(self, X_test):
         X_test = X_test.reshape(X_test.shape[0], -1)

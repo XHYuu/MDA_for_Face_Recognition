@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsClassifier
@@ -11,10 +13,12 @@ class Eigenface:
         self.knn = KNeighborsClassifier(n_neighbors=3)
 
     def fit(self, train_image, labels):
+        start = time.time()
         train_image = train_image.reshape(train_image.shape[0], -1)
         X_train_pca = self.pca.fit_transform(train_image)
 
         self.knn.fit(X_train_pca, labels)
+        print("Finish! Time consume:", time.time() - start)
 
     def predict(self, images):
         test_image = images.reshape(images.shape[0], -1)

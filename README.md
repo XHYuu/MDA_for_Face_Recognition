@@ -34,7 +34,7 @@ and each image was encoded as a third-order tensor of size for MDA/3-3.
 
 ### Experience Result
 
-##### For ORL:
+#### For ORL:
 
 **Eigenface**
 
@@ -47,19 +47,19 @@ and each image was encoded as a third-order tensor of size for MDA/3-3.
 
 |                        | G5/P5 | G4/P6 | G3/P7 | G2/P8 |
 |:----------------------:|:-----:|:-----:|:-----:|:-----:|
-|        Accuracy        | 0.94  | 0.89  | 0.88  | 0.76  |
-| Time consume <br/>(ms) |  129  |  133  |  135  |  135  |
+|        Accuracy        | 0.90  | 0.85  | 0.80  | 0.68  |
+| Time consume <br/>(ms) |  129  |  119  |  117  |  121  |
 
 **LDA**
 
 |                        | G5/P5 | G4/P6 | G3/P7 | G2/P8 |
 |:----------------------:|:-----:|:-----:|:-----:|:-----:|
-|        Accuracy        | 0.93  | 0.87  | 0.66  | 0.37  |
+|        Accuracy        | 0.88  | 0.80  | 0.76  | 0.55  |
 | Time consume <br/>(ms) | 0.25  | 0.18  | 0.14  | 0.08  |
 
 **MDA**
 
 |                        | G5/P5 | G4/P6 | G3/P7 | G2/P8 |
 |:----------------------:|:-----:|:-----:|:-----:|:-----:|
-|        Accuracy        | 0.80  | 0.81  | 0.69  | 0.60  |
-| Time consume <br/>(ms) |       |       |       |       |
+|        Accuracy        | 0.92  | 0.90  | 0.79  | 0.69  |
+| Time consume <br/>(ms) |  28   |  24   |  23   |  19   |

@@ -1,6 +1,8 @@
+import time
 import numpy as np
 from scipy.linalg import eigh
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from model.KNNClassifier import KNNClassifier
 
@@ -20,6 +22,7 @@ class MDA:
         self.knn = KNNClassifier(n_neighbors=3)
 
     def fit(self, images, labels):
+        start = time.time()
         tensor = np.moveaxis(images, 0, -1)  # [m_0,...,m_n,N]
         for t in tqdm(range(self.epochs), "Training:"):
             U_current = self.U.copy()
@@ -33,22 +36,21 @@ class MDA:
                 S_B = self.compute_S_B(Y, labels, k)
                 S_W = self.compute_S_W(Y, labels, k)
                 # calculate eigenvalue and eigenvector
-                eig_vals, eig_vecs = eigh(S_B, S_W)
+                eig_vals, eig_vecs = eigh(S_B, S_W + 1e-2 * np.eye(S_W.shape[0]))
                 # sort the eig_val in descending order
                 sorted_indices = np.argsort(eig_vals)[::-1]
                 eig_vecs = eig_vecs[:, sorted_indices]
 
                 # update U[k]
-                self.U[k] = eig_vecs[:, :self.output_dim[k]]
+                self.U[k] = eig_vecs[:, :self.output_dim[k]] + 1e-2
                 if t > 1 and (np.linalg.norm(self.U[k] - U_current[k], ord='fro') >=
                               self.input_dim[k] * self.output_dim[k] * self.epsilon):
                     stop_flag = False
             if t > 2 and stop_flag:
                 break
         tensor = self.project(tensor)
-        # tensor_flatten = tensor.reshape(tensor.shape[-1], -1)
-        # print("Test for knn", self.compute_scatter_ratio(tensor_flatten, labels))
         self.knn.fit(tensor, labels)
+        print("Finish! Time consume:", time.time() - start)
 
     def project(self, tensor, exclude_dim=-1):
         for mode, u in enumerate(self.U):
@@ -61,8 +63,8 @@ class MDA:
         use knn to perdict result
         """
         tensor = self.project(np.moveaxis(images, 0, -1))
-        # tensor_flatten = tensor.reshape(tensor.shape[-1], -1)
         pred = self.knn.predict(tensor)
+        # self.draw()
         return pred
 
     @staticmethod
@@ -70,7 +72,7 @@ class MDA:
         """
         Mode Product
         :param tensor: (m_1, m_2, ..., m_n)
-        :param matrix: change the mode-th of tensor(From m to J)
+        :param matrix: change the mode-th of tensor(From m to m')
         :param mode: dot dimension
         :return: (m_1, m_2, ..., m_mode-1, J, m_mode+1, ..., m_n)
         """
@@ -126,54 +128,3 @@ class MDA:
                 for j in range(Y_in_mode.shape[1]):
                     S_W += np.outer(diff[:, j], diff[:, j])
         return S_W
-
-    @staticmethod
-    def compute_scatter_ratio(X, labels):
-        """
-        计算类间散布矩阵与类内散布矩阵的迹的比值。
-
-        参数：
-        - X: ndarray, shape (n_samples, n_features)
-            输入数据，每行是一个样本，每列是一个特征。
-        - labels: ndarray, shape (n_samples,)
-            样本对应的类别标签。
-
-        返回：
-        - ratio: float
-            类间散布矩阵与类内散布矩阵的迹的比值。
-        """
-        # 计算整体均值
-        overall_mean = np.mean(X, axis=0)
-
-        # 类别标签的唯一值
-        unique_labels = np.unique(labels)
-
-        # 初始化类间和类内散布矩阵
-        S_B = np.zeros((X.shape[1], X.shape[1]))
-        S_W = np.zeros((X.shape[1], X.shape[1]))
-
-        for label in unique_labels:
-            # 获取当前类别的样本
-            class_samples = X[labels == label]
-
-            # 当前类别的均值
-            class_mean = np.mean(class_samples, axis=0)
-
-            # 当前类别的样本数量
-            N_i = class_samples.shape[0]
-
-            # 计算类间散布矩阵 S_B
-            mean_diff = (class_mean - overall_mean).reshape(-1, 1)  # 列向量
-            S_B += N_i * (mean_diff @ mean_diff.T)  # 外积
-
-            # 计算类内散布矩阵 S_W
-            for sample in class_samples:
-                sample_diff = (sample - class_mean).reshape(-1, 1)  # 列向量
-                S_W += sample_diff @ sample_diff.T  # 外积
-
-        # 计算类间与类内散布矩阵的迹的比值
-        trace_S_B = np.trace(S_B)
-        trace_S_W = np.trace(S_W)
-        ratio = trace_S_B / trace_S_W
-
-        return ratio

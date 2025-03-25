@@ -17,10 +17,10 @@ def arg_parser():
     parser.add_argument("--data_path", type=str, default="data/ORL")
     parser.add_argument("--model", type=str, default="LDA",
                         help="choose MDA, eigenface, fisherface, LDA")
-    parser.add_argument("--epochs", type=int, default=200)
-    parser.add_argument("--epsilon", type=float, default=1e-4)
-    parser.add_argument("--pca_energy", type=float, default=0.95)
-    parser.add_argument("--lda_outdim", type=int, default=30,
+    parser.add_argument("--epochs", type=int, default=150)
+    parser.add_argument("--epsilon", type=float, default=5e-4)
+    parser.add_argument("--pca_energy", type=float, default=0.9)
+    parser.add_argument("--lda_outdim", type=int, default=10,
                         help="Hyperparameter only for fisherface")
 
     args = parser.parse_args()
@@ -35,7 +35,7 @@ def train_test(args, train_set, train_label, test_set, test_label):
 
     if args.model == "MDA":
         model = MDA(input_dim=list(train_set[0].shape),
-                    output_dim=[40, 40],
+                    output_dim=[10, 10],
                     epochs=args.epochs,
                     epsilon=args.epsilon)
     elif args.model == "eigenface":
@@ -43,7 +43,7 @@ def train_test(args, train_set, train_label, test_set, test_label):
     elif args.model == "fisherface":
         model = Fisherface(pca_energy=args.pca_energy, out_dim=args.lda_outdim)
     elif args.model == "LDA":
-        model = LDAProcessor(n_components=30)
+        model = LDAProcessor(n_components=20)
     else:
         raise ValueError(f"Without model:{args.model}")
     model.fit(train_set, train_label)
@@ -59,7 +59,7 @@ def main():
     # TODO：use different m
     # for m in [5, 4, 3, 2]:
     # print(f"Train set : Test set = {m} : {10 - m}")
-    train_set, train_label, test_set, test_label = dataset.split_personal_image(5)
+    train_set, train_label, test_set, test_label = dataset.split_personal_image(2)
     train_test(args, train_set, train_label, test_set, test_label)
 
 
